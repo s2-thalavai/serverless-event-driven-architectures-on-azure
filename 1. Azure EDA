@@ -9,3 +9,69 @@
 | **Integration**          | **API Management + Function Apps**          | Provides API gateways for vendors and ERP integration |
 | **Observability**        | **Application Insights + Log Analytics**    | Monitors events, latency, failures                    |
 | **Security & Identity**  | **Azure AD / Managed Identity / Key Vault** | Secures secrets and inter-service calls               |
+
+## P2P Event Flow Example
+
+Let’s visualize an Invoice Lifecycle using Azure’s serverless ecosystem:
+
+```
+Vendor Portal (Front Door + Static Web App)
+        │
+        ▼
+[API Management] → [Azure Function: SubmitInvoice]
+        │
+        ▼
+→ emits → Event Grid Topic: InvoiceSubmitted
+        │
+        ├──> Subscriber: [Function: ValidateInvoice]
+        │       ├── Checks vendor & PO validity via Cosmos DB
+        │       └── Emits InvoiceValidated / InvoiceRejected
+        │
+        ├──> Subscriber: [Function: OCRExtraction]
+        │       └── Reads from Blob (PDF invoice), enriches metadata
+        │
+        └──> Subscriber: [Durable Function: ApprovalWorkflow]
+                ├── Waits for manager approval event
+                ├── Emits InvoiceApproved
+                └── Triggers downstream payment process
+
+Event Grid → [Function: SchedulePayment]
+        └── Writes PaymentRecord → Azure SQL DB
+             + Sends PaymentScheduled event → Teams/SNS/Webhook
+
+```
+
+## Event Taxonomy
+
+| Event Name         | Source              | Consumers                 | Payload                                    |
+| ------------------ | ------------------- | ------------------------- | ------------------------------------------ |
+| `InvoiceSubmitted` | Vendor Portal       | Validation, OCR, Approval | `{ invoiceId, vendorId, blobUri, amount }` |
+| `InvoiceValidated` | Validation Function | Approval Flow             | `{ invoiceId, status, errors }`            |
+| `InvoiceApproved`  | Approval Flow       | Payment Scheduler         | `{ invoiceId, approver, timestamp }`       |
+| `PaymentScheduled` | Payment Service     | Notification / ERP Sync   | `{ invoiceId, paymentDate, amount }`       |
+
+## Integration Patterns
+
+🔹 Event Routing
+
+- Azure Event Grid for lightweight event notifications.
+
+- Service Bus for guaranteed delivery, message ordering, and retries.
+
+- Hybrid Model: Event Grid triggers → Service Bus queue for reliable consumption by Functions.
+
+🔹 Data Synchronization
+
+- Invoice metadata → Cosmos DB
+
+- Attachments (PDFs, receipts) → Blob Storage
+
+- PO & Vendor master → Azure SQL (multi-tenant partitioning by TenantId)
+
+🔹 Multi-Tenant Strategy
+
+- Use TenantId in event metadata to isolate processing.
+
+- Event Grid Domains for tenant-scoped event routing.
+
+- Cosmos DB containers or Elastic Pool (Azure SQL) for data isolation.
