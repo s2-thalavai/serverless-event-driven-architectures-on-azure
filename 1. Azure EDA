@@ -1,0 +1,11 @@
+## Azure Components:
+
+| Layer                    | Azure Service                               | Purpose                                               |
+| ------------------------ | ------------------------------------------- | ----------------------------------------------------- |
+| **Event Backbone**       | **Event Grid / Service Bus / Event Hub**    | Routes domain events between microservices            |
+| **Compute (Serverless)** | **Azure Functions / Logic Apps**            | Reacts to incoming events (stateless, auto-scale)     |
+| **Storage**              | **Azure SQL / Cosmos DB / Blob Storage**    | Persists P2P data (vendor, invoice, PO, etc.)         |
+| **Orchestration**        | **Durable Functions / Logic Apps**          | Manages long-running workflows (approvals, payments)  |
+| **Integration**          | **API Management + Function Apps**          | Provides API gateways for vendors and ERP integration |
+| **Observability**        | **Application Insights + Log Analytics**    | Monitors events, latency, failures                    |
+| **Security & Identity**  | **Azure AD / Managed Identity / Key Vault** | Secures secrets and inter-service calls               |
