@@ -1,5 +1,17 @@
 # Serverless Event-Driven Architectures on Azure
 
+A challenge
+Building and supporting infrastructure in a large organization can be a challenging task.
+Organizations usually rely on automation for all deployment steps, such as creating cloud environments for a department with a set of virtual machines containing preinstalled software, utilities, and services. This preinstalled software may have its own dependencies like database, storage, connection to log analytics, and other log services.
+
+However, utilities and services may also have external dependencies. 
+Therefore, you need to have a mechanism to check and ensure that:
+
+- Required connections are established.
+- Dependencies are installed.
+- The proper automation runbook is triggered.
+- Alerts and logging are configured to notify the administrators or other team members.
+
 ## 1. Event-Driven Architecture
 
 - Event-Driven (EDA) is an architecture pattern that allows us to build highly scalable software and cloud systems. 
